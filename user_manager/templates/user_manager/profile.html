@@ -1,0 +1,146 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+{% load field_type %}
+
+{% block profile_active %}active{% endblock %}
+{% block account_active %}active{% endblock %}
+{% block title %}{{ block.super }} | Team Profile{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row vertical-centered" id="team-header">
+            {% if team_profile.avatar %}
+                <div class="col-lg-3 hidden-lg-down">
+                    <img src="{{ team_profile.avatar }}" alt="&nbsp;" class="abs-center img-fluid profile-gif"
+                         id="team-logo">
+                </div>
+            {% endif %}
+            <div class="col">
+                <div class="jumbotron" style="margin-bottom: 0">
+                    <h1 style="margin-bottom: 20px">
+                        {% if team_profile.bug_bounty_points > 0 %}
+                            <img src="https://cdn0.iconfinder.com/data/icons/gamification-flat-awards-and-badges/500/star1-512.png" alt="bugbounty" style="max-width: 60px">
+                        {% endif %}
+                        {{ team }}'s profile
+                        {% if team_profile.bug_bounty_points > 0 %}
+                            <img src="https://cdn0.iconfinder.com/data/icons/gamification-flat-awards-and-badges/500/star1-512.png" alt="bugbounty" style="max-width: 60px">
+                        {% endif %}
+                    </h1>
+                    {% if ctf_has_been_started %}
+                        <span class="chip">{{ team_score }} points</span>
+                        {% if team_profile.bug_bounty_points > 0 %}
+                            <span class="chip"> + {{ team_profile.bug_bounty_points }} BB points</span>
+                        {% endif %}
+                        {% if team_profile.bug_bounty_points > 0 %}
+                            <br>
+                            <p>
+                                You earned <b>bug bounty points</b>! Thank you for making INS'hAck a better place to hack.
+                            </p>
+                        {% endif %}
+                        <h3>You solved {{ percentage_valitated_challs }}% of the CTF
+                            ({{ team_score }}/{{ points_to_get }}pts)</h3>
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar progress-bar-info"
+                                 style="width: {{ percentage_valitated_challs }}%;"></div>
+                        </div>
+                    {% else %}
+                        <h2>The CTF is offline.</h2>
+                        <small>Please see <a href="/">the home page</a> to know when it starts and ends.</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if sshs_set %}
+        <div class="row" style="margin-top: 20px">
+            <div class="col">
+                <div class="card card-block">
+                    {% for ssh in sshs_set %}
+                    <h2>SSH infos:</h2>
+                    Login: user{{ team_profile.pk }} <br>
+                    Password: {{ ssh.password }}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row" style="margin-top: 20px">
+            <div class="col">
+                <div class="card card-block">
+                    <h2>Update your information below.</h2>
+                    <form method="post" action="" enctype="multipart/form-data" class="form-horizontal"
+                          id="form-update-profile">
+                        <fieldset>
+                            {% for field in team_form %}
+                                <div class="md-form {% if field.errors %}has-error{% endif %}">
+                                    {{ field }}
+                                    <label for="id_{{ field.name }}">{{ field.label }}</label>
+                                    {% for error in field.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+
+                            {% for field in team_profile_form %}
+                                {% if field|fieldtype == 'FileInput' %}
+                                    <div class="md-group col {% if field.errors %}has-error{% endif %} file">
+                                        <label for="id_{{ field.name }}">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% for error in field.errors %}
+                                            <p class="text-danger">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="md-form {% if field.errors %}has-error{% endif %}">
+                                        {{ field }}
+                                        <label for="id_{{ field.name }}">{{ field.label }}</label>
+                                        {% for error in field.errors %}
+                                            <p class="text-danger">{{ error }}</p>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <div class="col">
+                                    <button type="submit" class="btn btn-default">Update</button>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var pass = $("#id_password");
+            var pass_confirm = $("#id_password_validation");
+            pass.on("input", function () {
+                if (pass.val().length) {
+                    pass_confirm.attr('required', true);
+                }
+                else {
+                    pass_confirm.attr('required', false);
+                }
+            });
+            pass_confirm.on("input", function () {
+                if (pass_confirm.val().length) {
+                    pass.attr('required', true);
+                }
+                else {
+                    pass.attr('required', false);
+                }
+            })
+        });
+
+    </script>
+{% endblock %}

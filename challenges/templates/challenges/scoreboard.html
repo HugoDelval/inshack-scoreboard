@@ -1,0 +1,221 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+
+{% block scoreboard_active %}active{% endblock %}
+{% block title %}{{ block.super }} | Scoreboard{% endblock %}
+{% block container %}container-fluid{% endblock %}
+
+{% block body %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron">
+                <h1>
+                    Scoreboards
+                </h1>
+                <p>
+                    You will find here 2 scoreboards: the <a href="#all">global scoreboard</a>, and the <a
+                        href="#onsite">on site scoreboard</a>.
+                    <br>
+                    If you belong in the on site scoreboard, please ping us (cf: <a href="/#contact">contact</a>) and
+                    give us <b>your team name</b> and <b>your location in the building</b>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <h2 id="all">All teams</h2>
+    {% if ctf_settings.state == ctf_settings.ON_SITE_HIDDEN %}
+        <b>Note:</b> The scoreboard is frozen until the end of the on-site CTF. That way you can't see the other teams'
+        flags and the suspense is unbearable.
+    {% elif ctf_settings.state == ctf_settings.ONLINE_HIDDEN %}
+        <b>Note:</b> The scoreboard is frozen until the end of the CTF. That way you can't see the other teams' flags
+        and the suspense is unbearable.
+    {% elif ctf_settings.state == ctf_settings.ONLINE_END %}
+        <b>Note:</b> The CTF is now finished, the scoreboards won't evolve more.
+    {% endif %}
+    <div class="row" style="overflow-x: auto;max-width: 95vw;margin-top: 10px;">
+        <div class="col">
+            <table class="table table-hover table-sm">
+                <colgroup></colgroup>
+                <colgroup></colgroup>
+                <colgroup></colgroup>
+                <colgroup></colgroup>
+
+                {% for chall in challenges %}
+                    <colgroup></colgroup>
+                {% endfor %}
+                <thead class="thead-inverse">
+                <tr>
+                    <th class="table-rank">#</th>
+                    {% if ctf_has_been_started %}
+                        <th class="table-score">Score</th>
+                    {% endif %}
+                    <th class="table-team">Team</th>
+                    <th class="table-from">From</th>
+                    {% for chall in challenges %}
+                        <th><span class="vertical-text">&nbsp;{{ chall }}</span></th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for team in all_teams %}
+                    <tr id="global-{{ team.pk }}">
+                        <th scope="row" class="table-rank">{{ forloop.counter }}</th>
+                        {% if ctf_has_been_started %}
+                            <td class="table-score">
+                                {% if team.teamprofile.saved_bugbounty_points > 0 %}
+                                    <img src="https://cdn0.iconfinder.com/data/icons/gamification-flat-awards-and-badges/500/star1-512.png" alt="bugbounty" style="max-width: 20px;margin-bottom: 4px" >
+                                {% endif %}
+                                {{ team.teamprofile.score }}
+                            </td>
+                        {% endif %}
+                        <td class="table-team">{% if team.teamprofile.avatar %}
+                            <img src="{{ team.teamprofile.avatar }}" alt="&nbsp;"
+                                 style="max-width: 60px;max-height: 60px;margin-top: 2px"><br>{% endif %}{{ team }}</td>
+                        <td class="table-from table-last-info">
+                            {% if team.teamprofile.comes_from %}{{ team.teamprofile.comes_from }}{% else %}
+                                -{% endif %}</td>
+                        {% for chall_done in team.teamprofile.challenges_state %}
+                            <td><i class={% if chall_done %}"fa fa-flag-checkered" style="color: darkgreen;">
+                            {% else %}"fa fa-times" style="color: darkred;">{% endif %}
+                            </i>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot class="thead-inverse">
+                <tr>
+                    <th class="table-rank">#</th>
+                    {% if ctf_has_been_started %}
+                        <th class="table-score">Score</th>
+                    {% endif %}
+                    <th class="table-team">Team</th>
+                    <th class="table-from">From</th>
+                    {% for chall in challenges %}
+                        <th><span class="vertical-text">&nbsp;{{ chall }}</span></th>
+                    {% endfor %}
+                </tr>
+                </tfoot>
+
+            </table>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2 id="onsite">On site teams</h2>
+    {% if ctf_settings.state == ctf_settings.ON_SITE_HIDDEN %}
+        <b>Note:</b> The scoreboard is frozen until the end of the on-site CTF. That way you can't see the other teams'
+        flags and the suspense is unbearable.
+    {% elif ctf_settings.state == ctf_settings.ON_SITE_END or ctf_settings.state == ctf_settings.ONLINE_HIDDEN %}
+        <b>Note:</b> The on-site CTF is now finished, this scoreboard won't evolve anymore. You can still flag the
+        challenges but it will only impact the global scoreboard above.
+    {% elif ctf_settings.state == ctf_settings.ONLINE_END %}
+        <b>Note:</b> The CTF is now finished, the scoreboards won't evolve more.
+    {% endif %}
+    <div class="row" style="overflow-x: auto;max-width: 95vw;margin-top: 10px;">
+        <div class="col">
+            <table class="table table-hover table-sm">
+
+                <colgroup></colgroup>
+                <colgroup></colgroup>
+                <colgroup></colgroup>
+                <colgroup></colgroup>
+
+                {% for chall in challenges %}
+                    <colgroup></colgroup>
+                {% endfor %}
+
+                <thead class="thead-inverse">
+                <tr>
+                    <th class="table-rank">#</th>
+                    {% if ctf_has_been_started %}
+                        <th class="table-score">Score</th>
+                    {% endif %}
+
+                    <th class="table-team">Team</th>
+                    <th class="table-from">From</th>
+                    {% for chall in challenges %}
+                        <th><span class="vertical-text">&nbsp;{{ chall }}</span></th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for team in teams_onsite %}
+                    <tr id="local-{{ team.pk }}">
+                        <th scope="row" class="table-rank">{{ forloop.counter }}</th>
+                        {% if ctf_has_been_started %}
+                            <td class="table-score">
+                                {% if team.teamprofile.saved_bugbounty_points > 0 %}
+                                    <img src="https://cdn0.iconfinder.com/data/icons/gamification-flat-awards-and-badges/500/star1-512.png" alt="bugbounty" style="max-width: 20px;margin-bottom: 4px" >
+                                {% endif %}
+                                {{ team.teamprofile.score }}
+                            </td>
+                        {% endif %}
+                        <td class="table-team">{% if team.teamprofile.avatar %}
+                            <img src="{{ team.teamprofile.avatar }}" alt="&nbsp;"
+                                 style="max-width: 60px;max-height: 60px;"><br>{% endif %}{{ team }}</td>
+                        <td class="table-from table-last-info">
+                            {% if team.teamprofile.comes_from %}{{ team.teamprofile.comes_from }}{% else %}
+                                -{% endif %}</td>
+                        {% for chall_done in team.teamprofile.challenges_state %}
+                            <td><i class={% if chall_done %}"fa fa-flag-checkered" style="color: darkgreen;">
+                            {% else %}"fa fa-times" style="color: darkred;">{% endif %}
+                            </i>
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot class="thead-inverse">
+                <tr>
+                    <th class="table-rank">#</th>
+                    {% if ctf_has_been_started %}
+                        <th class="table-score">Score</th>
+                    {% endif %}
+                    <th class="table-team">Team</th>
+                    <th class="table-from">From</th>
+                    {% for chall in challenges %}
+                        <th><span class="vertical-text">&nbsp;{{ chall }}</span></th>
+                    {% endfor %}
+                </tr>
+                </tfoot>
+
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            var $cols = $('colgroup');
+            $('td').on('mouseover', function () {
+                var i = $(this).prevAll('td').length + 1;
+                $(this).parent().addClass('hover');
+                $($cols[i]).addClass('hover');
+
+            }).on('mouseout', function () {
+                var i = $(this).prevAll('td').length + 1;
+                $(this).parent().removeClass('hover');
+                $($cols[i]).removeClass('hover');
+            });
+
+            $('table').mouseleave(function () {
+                $cols.removeClass('hover');
+            })
+        });
+    </script>
+{% endblock %}
+
+
+{% block messages %}
+{#    disable messages as it is a cached template#}
+{% endblock %}
+
+{% block additional_user_actions %}
+    $("#local-" + data.pk).addClass("table-success");
+    $("#global-" + data.pk).addClass("table-success");
+{% endblock %}

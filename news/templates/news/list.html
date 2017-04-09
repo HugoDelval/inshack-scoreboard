@@ -1,0 +1,45 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+
+{% block news_active %}active{% endblock %}
+{% block title %}{{ block.super }} | News{% endblock %}
+
+{% block body %}
+
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col">
+            <div class="jumbotron">
+                <h1>
+                    News
+                </h1>
+                <p>
+                    We will try to keep you informed of any news we have (before and during the CTF). So be sure to
+                    check out this page for time to time.
+                    <br>
+                    If you have a question, please ping us (cf: <a href="/#contact">contact</a>).
+                </p>
+            </div>
+        </div>
+    </div>
+    {% for n in news %}
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col">
+                <div class="card card-block">
+                    {{ n.text }}
+                    <i style="text-align: right;">{{ n.updated_date }} ({{ n.updated_date.tzname }})</i>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <form id="empty_news" action="{% url 'news:empty_news' %}" method="post">{% csrf_token %}</form>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var form = $('#empty_news');
+            $.post(form.attr('action'), form.serialize(), function(res){});
+        })
+    </script>
+{% endblock %}

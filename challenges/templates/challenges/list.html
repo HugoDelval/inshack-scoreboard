@@ -1,0 +1,173 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+{% load get_item %}
+
+{% block challenges_list_active %}active{% endblock %}
+{% block title %}{{ block.super }} | Challenges{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col">
+            <h1>List of challenges</h1>
+            {% if not challenges %}
+                There is no challenge available yet.
+                Please see <a href="/">the home page</a> to know when the CTF starts and ends.
+            {% else %}
+                <div id="messages_validation"></div>
+            {% endif %}
+        </div>
+    </div>
+    {% if challenges %}
+        {% for code, category in categories %}
+            <h2 style="margin-top: 30px">{{ category }}</h2>
+            <hr>
+            <div class="row">
+                {% for chall in challenges %}
+                    {% if chall.category == code %}
+                        <div class="col-lg-6" style="padding-left: 10px;padding-right: 10px;">
+                            <!--Rotating card-->
+                            <div class="card-wrapper" style="height: 400px;">
+                                <div id="card-{{ chall.id }}" class="card-rotating effect__click">
+
+                                    <!--Front Side-->
+                                    <div class="face front card hand"
+                                         id="chall-{{ chall.id }}"
+                                         onclick="reveal(this)" data-card="card-{{ chall.id }}">
+                                        <!--Content-->
+                                        <div class="content">
+                                            <h4 id="chall-title-{{ chall.id }}">
+                                                {{ chall.name }}
+                                            </h4>
+                                            <hr>
+                                            <div class="text-center" style="margin-top:120px">
+                                                <div class="status" style="margin-top: {% if chall.is_ovh_chall %}-60px{% else %}-25px{% endif %};margin-bottom: 15px;">
+                                                    {% if chall.is_ovh_chall %}
+                                                        <img src="https://www.ovh.com/fr/news/logos/normal/logo-ovh-black-72DPI.png" alt="An OVH challenge!" class="img-fluid" style="margin: auto auto 20px;width: 70px">
+                                                    {% endif %}
+                                                    {% if challenges_states|get_item:chall.slug %}
+                                                        <i class="fa fa-battery-4"
+                                                           style="color: darkgreen;"></i> Status: OK
+                                                    {% else %}
+                                                        <i class="fa fa-battery-0" style="color: darkred"></i> Status: Error
+                                                    {% endif %}
+                                                </div>
+                                                <h3>{{ chall.get_category_display }} {{ chall.nb_points }}</h3>
+                                                <hr width="50%">
+                                                <h4>{{ chall.nb_of_validations }}
+                                                    validation{{ chall.nb_of_validations|pluralize }}</h4>
+                                            </div>
+
+                                        </div>
+                                        <!--/.Content-->
+                                    </div>
+                                    <!--/.Front Side-->
+
+                                    <!--Back Side-->
+                                    <div class="face back">
+
+                                        <!--Title-->
+                                        <h4 class="card-title">{{ chall.name }} -
+                                            <small>{{ chall.category }} {{ chall.nb_points }}</small>
+                                            <i class="fa fa-close rotate-btn"
+                                               data-card="card-{{ chall.id }}"></i>
+                                        </h4>
+                                        <hr>
+                                        <div class="content" style="overflow-y: scroll; height:200px;">
+                                            <p>
+                                                {{ chall.description|safe }}
+                                            </p>
+                                            {% if chall.chall_file %}
+                                                <a href="{{ chall.chall_file }}" class="btn btn-sm btn-blue-grey" target="_blank" download><i
+                                                        class="fa fa-file-archive-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;Challenge's
+                                                    file</a>
+                                            {% endif %}
+                                        </div>
+                                        <br>
+                                        <form id="chall_{{ chall.id }}" class="flag_form">
+                                            <div class="form-group row">
+                                                <div class="col-8">
+                                                    <div class="md-form">
+                                                        <input type="text" id="id_flag_chall_{{ chall.id }}"
+                                                               name="flag" class="form-control flag">
+                                                        <label for="id_flag_chall_{{ chall.id }}">The flag</label>
+                                                        {% for error in field.errors %}
+                                                            <p class="text-danger">{{ error }}</p>
+                                                        {% endfor %}
+                                                    </div>
+
+                                                </div>
+                                                {% csrf_token %}
+
+                                                <div class="col-4">
+                                                    <button type="submit" class="btn btn-default">Submit</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <!--/.Back Side-->
+
+                                </div>
+                            </div>
+                            <!--/.Rotating card-->
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        function reveal(card) {
+            var t = $(card).attr("data-card");
+            $("#" + t).toggleClass("flipped");
+        }
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: "{% url 'challenges:get_validated_challenges' %}",
+                success: function (data) {
+                    data.challs_validated.forEach(function (id_chall) {
+                        $("#chall-" + id_chall).css("background-color", "rgb(108, 198, 99)");
+                        var title = $("#chall-title-" + id_chall);
+                        title.prepend('<i class="fa fa-flag-checkered" style="color: darkgreen"></i>');
+                        title.append('<i class="fa fa-flag-checkered" style="color: darkgreen"></i>');
+                    })
+                },
+                error: function (data) {
+                    console.log(data.message);
+                }
+            });
+            $("form.flag_form").submit(function (e) {
+                e.preventDefault();
+
+                var chall_id = $("input.flag", this)[0].id.split('id_flag_chall_')[1];
+                var url = "/challenges/validate/" + chall_id + "/";
+                var $this = $(this);
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: $this.serialize(),
+                    success: function (data) {
+                        if (data.error) {
+                            toastr.error(data.message);
+                        } else {
+                            toastr.success(data.message);
+                            window.setTimeout('location.reload()', 3000);
+                        }
+                    },
+                    error: function (data) {
+                        toastr.error(data.message);
+                    }
+                });
+            });
+
+        });
+    </script>
+{% endblock %}
+
+{% block messages %}
+    {#    disable messages as it is a cached template#}
+{% endblock %}

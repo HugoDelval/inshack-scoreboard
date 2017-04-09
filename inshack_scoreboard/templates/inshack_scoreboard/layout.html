@@ -1,0 +1,164 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="INS'HACK is a Capture The Flag organised by InSecurity on the 6th April 2017">
+    <meta name="date" content="2017-04-06" scheme="YYYY-MM-DD">
+    <meta name="keywords" content="CTF,InSecurity,security,challenges,iot,INSA">
+    <meta name="author" content="Hugo DELVAL for InSecurity">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>
+        {% block title %}INS'HACK 2017{% endblock %}
+    </title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    {#    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.3.0/css/mdb.min.css">#}
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="{% static 'inshack_scoreboard/css/style.css' %}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    {% block css %}{% endblock %}
+    <!-- /CSS -->
+
+</head>
+<body style="min-height: 100%;display: flex;flex-direction: column;">
+
+<nav class="navbar navbar-toggleable-sm navbar-dark bg-primary">
+    <div class="container">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#collapseEx2" aria-controls="collapseEx2" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/" style="margin-top: 2px; margin-right: 30px;">INS'HACK</a>
+        <div class="collapse navbar-collapse" id="collapseEx2">
+            <ul id="main-menu" class="navbar-nav mr-auto">
+                <li class="nav-item {% block home_active %}{% endblock %}"><a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/#rules">Rules</a></li>
+                <li class="nav-item"><a class="nav-link" href="/#contact">Contact</a></li>
+                <li class="nav-item {% block challenges_list_active %}{% endblock %}"><a class="nav-link"
+                                                                                         href="{% url 'challenges:list' %}">Challenges</a>
+                </li>
+                <li class="nav-item {% block scoreboard_active %}{% endblock %}"><a class="nav-link"
+                                                                                    href="{% url 'challenges:scoreboard' %}">Scoreboard</a>
+                </li>
+                <li class="nav-item {% block news_active %}{% endblock %}">
+                    <a class="nav-link" id="news" href="{% url 'news:list' %}">
+                        News
+                    </a>
+                </li>
+            </ul>
+            <ul id="account-menu" class="navbar-nav">
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="{% block container %}container{% endblock %}" style="margin-top: 15px;flex: 1;">
+    {% block body %}
+    {% endblock %}
+</section>
+
+<footer class="page-footer center-on-small-only">
+    <!-- OVH -->
+    <div class="ovh">
+        All our servers are proudly hosted by our sponsor:
+        <br>
+        <br>
+        <a href="https://ovh.com/" target="_blank">
+            <img style="max-height: 70px" src="https://www.ovh.com/fr/news/logos/normal/logo-ovh-white-72DPI.png">
+        </a>
+    </div>
+
+    <!--Social buttons-->
+    <div class="social-section">
+        <ul>
+            <li><a href="https://www.facebook.com/asso.securite.insa/" target="_blank" type="button" class="btn-floating btn-large btn-fb"><i class="fa fa-facebook"> </i></a></li>
+            <li><a href="https://twitter.com/insecurityasso" target="_blank" type="button" class="btn-floating btn-large btn-tw"><i class="fa fa-twitter"> </i></a></li>
+            <li><a href="https://t.me/inshack2017" target="_blank" type="button" class="btn-floating btn-large btn-tw"><i class="fa fa-telegram"> </i></a></li>
+        </ul>
+    </div>
+    <!--/.Social buttons-->
+
+    <!--Copyright-->
+    <div class="footer-copyright">
+        <div class="container-fluid">
+            © 2017 Copyleft: <a href="https://insecurity-insa.fr">InSecurity-insa.fr</a>
+
+        </div>
+    </div>
+    <!--/.Copyright-->
+
+</footer>
+
+<!-- Javascript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+        integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+        integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+        crossorigin="anonymous"></script>
+<script src="{% static 'inshack_scoreboard/js/mdb.min.js' %}"></script>
+
+{% block messages %}
+    {% if messages %}
+        <script>
+            toastr.options.closeDuration = 5000;
+            {% for msg in messages %}
+                toastr.{{ msg.level_tag }}('{{ msg.message }}');
+            {% endfor %}
+        </script>
+    {% endif %}
+{% endblock %}
+
+<script type="text/javascript">
+    if (location.protocol != 'https:') {
+        location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+    }
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            url: "{% url 'team:team_infos' %}",
+            success: function (data) {
+                var accountMenu = $("#account-menu");
+                if (data.is_logged_in) {
+                    accountMenu.append('<li id="profile" class="nav-item {% block profile_active %}{% endblock %}"><a class="nav-link" href="{% url 'team:profile' %}">Profile</a></li>');
+                    accountMenu.append('<li id="logout" class="nav-item"><a class="nav-link" href="{% url 'team:logout' %}">Log out</a></li>');
+                    if (data.nb_unread_messages > 0) {
+                        $("#news").prepend('<span class="badge badge-danger" ' +
+                            'style="position: absolute;font-size: 60%;top: 0;margin-left: 3px;left: 0;margin-top: 2px;">'
+                            + data.nb_unread_messages
+                            + '</span>&nbsp;'
+                        );
+                    }
+                    if (data.is_admin) {
+                        var menu = $('#main-menu');
+                        menu.append('<li class="nav-item {% block admin_active %}{% endblock %}">'
+                            + '<a class="nav-link" href="{% url 'challenges:admin' %}">Admin actions</a></li>'
+                        );
+                    }
+                    {% block additional_user_actions %}{% endblock %}
+                } else {
+                    accountMenu.append('<li id="register" class="nav-item {% block register_active %}{% endblock %}"><a class="nav-link" href="{% url 'team:register' %}">Register</a></li>');
+                    accountMenu.append('<li id="login" class="nav-item {% block login_active %}{% endblock %}"><a class="nav-link" href="{% url 'team:login' %}">Log in</a></li>');
+                }
+            },
+            error: function (data) {
+                console.log(data);
+            }
+        });
+    });
+</script>
+
+{% block javascript %}{% endblock %}
+<!-- /Javascript -->
+</body>
+
+</html>

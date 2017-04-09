@@ -1,0 +1,69 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+{% load field_type %}
+
+{% block add_challenge_active %}active{% endblock %}
+{% block title %}{{ block.super }} | {% if creating %}Adding{% else %}Updating{% endif %} Challenge{% endblock %}
+
+{% block body %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron">
+                <h1>
+                    {% if creating %}
+                    Use the form bellow to add a challenge
+                    {% else %}
+                    Use the form bellow to update the challenge
+                    {% endif %}
+                </h1>
+                <p>
+                    If something is broken then help yourself and solve it ! (and blame Hugo)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card card-block">
+                <form method="post"
+                      action="{% if creating %}{% url "challenges:add" %}{% else %}{% url "challenges:update" slug %}{% endif %}"
+                      enctype="multipart/form-data"
+                      id="form-add-update-chall">
+                    <fieldset>
+
+                        {% for field in challenge_form %}
+                            {% if field|fieldtype == 'FileInput' %}
+                                <div class="md-group col {% if field.errors %}has-error{% endif %} file">
+                                    <label for="id_{{ field.name }}">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="md-form {% if field.errors %}has-error{% endif %}">
+                                    {{ field }}
+                                    <label for="id_{{ field.name }}">{{ field.label }}</label>
+                                    {% for error in field.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div class="col">
+                                <button type="submit" class="btn btn-default">Submit challenge!</button>
+                            </div>
+                        </div>
+
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

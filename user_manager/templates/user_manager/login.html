@@ -1,0 +1,44 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+
+{% block login_active %}active{% endblock %}
+{% block title %}{{ block.super }} | Login{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron">
+                <h1>Log in to INS'HACK</h1>
+                <p>New around here ? You can also <a href="{% url 'team:register' %}">register here</a>.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="card card-block">
+                <form method="post" action="" id="form-login">
+                    <fieldset>
+                        {% for field in login_form %}
+                            <div class="md-form {% if field.errors %}has-error{% endif %}">
+                                {{ field }}
+                                <label for="id_{{ field.name }}">{{ field.label }}</label>
+                                {% for error in field.errors %}
+                                    <p class="text-danger">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <div class="col-md-10 col-md-offset-2">
+                                <button type="submit" class="btn btn-default">Login</button>
+                            </div>
+                        </div>
+
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

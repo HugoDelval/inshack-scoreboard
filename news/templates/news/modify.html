@@ -1,0 +1,40 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+
+{% block news_active %}active{% endblock %}
+{% block title %}{{ block.super }} | News{% endblock %}
+
+{% block body %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron">
+                <h1>
+                    Modify a news
+                </h1>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: 30px">
+        <div class="col">
+            <div class="card card-block">
+                <h2 style="margin-bottom: 25px">Modify a news</h2>
+                <form action="{% url "news:modify" news.pk %}" method="post">
+                    {% csrf_token %}
+                    {% for field in news_form %}
+                        <div class="md-form {% if field.errors %}has-error{% endif %}">
+                            {{ field }}
+                            <label for="id_{{ field.name }}">{{ field.label }}</label>
+                            {% for error in field.errors %}
+                                <p class="text-danger">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    <input type="submit" class="btn btn-success btn-sm" value="Update news">
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

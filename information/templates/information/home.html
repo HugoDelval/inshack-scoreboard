@@ -1,0 +1,160 @@
+{% extends "inshack_scoreboard/layout.html" %}
+{% load staticfiles %}
+
+{% block title %}{{ block.super }} | Home{% endblock %}
+{% block home_active %}active{% endblock %}
+
+{% block body %}
+    <h1>INS'HACK</h1>
+    <hr>
+    <h2>TL;DR</h2>
+    <div class="card card-block">
+        <p class="card-text">
+            Classic Jeopardy style CTF, from <a
+                href="https://www.timeanddate.com/worldclock/converter.html?iso=20170406T163000&p1=333&p2=1440&p3=179&p4=224&p5=237&p6=438&p7=240"
+                target="_blank">06 Apr</a> to <a
+                href="https://www.timeanddate.com/worldclock/converter.html?iso=20170409T163000&p1=333&p2=1440&p3=179&p4=224&p5=237&p6=438&p7=240"
+                target="_blank">09 Apr</a> 2017.
+        </p>
+    </div>
+    <hr>
+    <h2>What? When? Where? Who? How?</h2>
+    <p>Welcome stranger! Don't worry, we have an answer for each of your questions.</p>
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-lg-6">
+            <div class="card card-block" style="height: 200px;">
+                <h4 class="card-title">What?</h4>
+                <p class="card-text">A classic Jeopardy style CTF (aka Capture The Flag).</p>
+                <div class="flex-row" style="position:absolute;bottom:10px;">
+                    <a class="card-link btn btn-default" target="_blank" href="https://ctftime.org/ctf-wtf/">CTF WTF?</a>
+                    <a class="card-link btn btn-default" href="/#rules">Rules</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card card-block" style="height: 200px;">
+                <h4 class="card-title">When?</h4>
+                <p class="card-text">
+                    <u>On site</u> & <u>Online</u> <br>
+                    There will be a different scoreboard for on site and online players. Moreover there will be free
+                    drinks/food on site! So come along ;)<br>
+                </p>
+                <div class="flex-row" style="position:absolute;bottom:10px;">
+                    {#                https://www.timeanddate.com/worldclock/converter.htm#}
+                    <a class="card-link btn btn-sm btn-default" target="_blank"
+                       href="https://www.timeanddate.com/worldclock/converter.html?iso=20170406T163000&p1=333&p2=1440&p3=179&p4=224&p5=237&p6=438&p7=240">
+                        <time datetime="2017-04-06 18:30">Start time</time>
+                    </a>
+                    <a class="card-link btn btn-sm btn-default" target="_blank"
+                       href="https://www.timeanddate.com/worldclock/converter.html?iso=20170406T213000&p1=333&p2=1440">
+                        <time datetime="2016-04-06 23:30">End on site</time>
+                    </a>
+                    <a class="card-link btn btn-sm btn-default" target="_blank"
+                       href="https://www.timeanddate.com/worldclock/converter.html?iso=20170409T163000&p1=333&p2=1440&p3=179&p4=224&p5=237&p6=438&p7=240">
+                        <time datetime="2016-04-06 23:30">End online</time>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-lg-4">
+            <div class="card card-block" style="height: 260px">
+                <h4 class="card-title">Where?</h4>
+                <p class="card-text">
+                    <b>On site : </b> @INSA Lyon, département informatique (computer science building).
+                    <br>
+                    <b>Online : </b> On this website.
+                </p>
+                <div class="flex-row" style="position:absolute;bottom:10px;">
+                    <a class="card-link btn btn-default" target="_blank"
+                       href="http://www.openstreetmap.org/?mlat=45.7819&mlon=4.8728#map=15/45.7819/4.8728">On site
+                        location</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-block" style="height: 260px">
+                <h4 class="card-title">Who?</h4>
+                <p class="card-text">
+                    This CTF is brought you by <b>InSecurity</b>, a student society from INSA Lyon (France).
+                    <br><br>
+                    If you have any question feel free to contact us.
+                </p>
+                <div class="flex-row" style="position:absolute;bottom:10px;">
+                    <a class="card-link btn btn-sm btn-default" target="_blank" href="https://insecurity-insa.fr">insecurity-insa.fr</a>
+                    <a class="card-link btn btn-sm btn-default" href="/#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-block" style="height: 260px">
+                <h4 class="card-title">How?</h4>
+                <p class="card-text">With a computer and an internet connection. And a brain!</p>
+                <div class="flex-row" style="position:absolute;bottom:10px;">
+                    <a class="card-link btn btn-default" href="/#rules">Rules</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <h2 id="rules">Rules</h2>
+    <div class="card card-block">
+        <ol>
+            <li>
+                It will be a <b>Jeopardy</b>-style CTF.
+            </li>
+            <li>
+                A team should contain from 1 to 5 players.
+            </li>
+            <li>
+                Players may never: <br>
+                  - flood or spam the Telegram chatroom.<br>
+                  - destroy flags or prevent other players from accessing them.<br>
+                  - attack other players.<br>
+                  - share or trade solutions, hints, or flags to any challenges during the CTF with players from other
+                teams.<br>
+                Note that any infraction to the previous rules may result to <b>disqualification</b>.
+            </li>
+            <li>
+                There will be on-site-only challenges. These challenges will not award CTF points but the best teams will get prizes.
+            </li>
+            <li>
+                Any degradation of service may result in <b>disqualification</b>, please do not use automated tools as
+                dirbuster or sqlmap which would increase the network traffic. Note that we might have some mitigation
+                against those tools.
+            </li>
+            <li>
+                Players are awarded points by capturing flags. These flags must be entered into the respective
+                locations. If a flag is correct, points will be awarded automatically by the system. If you have
+                captured a flag and the system is not accepting your answer, please notify us via Telegram. Note that because
+                of web caching, you might not see your points right away, please be patient.
+            </li>
+            <li>
+                Bugbounty points will be given to any team finding a security bug in the infrastructure as
+                long as the team did not disrupt the challenge and immediately reported it to an admin with full details. The
+                number of points (if any) given to the team will be <b>entirely decided by the admins</b> (based on the
+                bug impact and the team's actions regarding this bug).
+            </li>
+            <li>
+                Players should remain respectful to all other CTF players in the chatroom. A warning will be given if an
+                admin deems a player’s behavior in the chatroom to be inappropriate. If the player’s inappropriate
+                behavior persists after the warning, the player will be banned and disqualified from the competition.
+            </li>
+            <li>
+                CTF admins and challenges writers will not play in the CTF. They are only allowed to provide support.
+            </li>
+            <li>
+                Flag format is <code>INSA{...}</code>
+            </li>
+        </ol>
+    </div>
+    <hr>
+    <h2 id="contact">Contact</h2>
+    <div class="card card-block">
+        <p class="card-text">
+            We will be on Telegram during the whole CTF, please join in: <a href="https://t.me/inshack2017">Here</a>!<br>
+            Otherwise you can reach us here: <a href="mailto:contact@insecurity-insa.fr">contact@insecurity-insa.fr</a>
+        </p>
+    </div>
+{% endblock %}
