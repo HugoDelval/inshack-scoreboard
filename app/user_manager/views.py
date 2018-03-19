@@ -1,10 +1,9 @@
 import logging
-import os
 
-from PIL import Image
+from challenges.models import CTFSettings, Challenge
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import logout, authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpRequest
@@ -15,14 +14,11 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from subprocess import Popen
-
 from django.views.decorators.http import require_http_methods
-
-from challenges.models import CTFSettings, Challenge
 from inshack_scoreboard import settings
-from user_manager.forms import UserForm, TeamProfileForm, LoginForm
 from user_manager.models import Ssh
+
+from user_manager.forms import UserForm, TeamProfileForm, LoginForm
 
 logger = logging.getLogger(__name__)
 
@@ -58,18 +54,17 @@ def create_or_update_team(request: HttpRequest, team_form: UserForm, team_profil
             else:
                 messages.add_message(request, messages.SUCCESS, 'Your team has been updated.')
             return redirect(reverse('team:profile'))
-        except Exception as e:
-            logger.error('Error while creating/updating a team. creating=' + str(creating) + ', req=' + "\n".join(request.readlines()))
+        except Exception:
+            logger.exception('Error while creating/updating a team. creating=' + str(creating) + ', req=' + "\n".join(request.readlines()))
             request.session['messages'] = ['Sorry, an error occurred, please alert an admin.']
     return None
 
 
-@require_http_methods(["GET"])
+@require_http_methods(["POST"])
 @never_cache
 def logout_user(request: HttpRequest) -> HttpResponse:
-    if request.user.is_authenticated():
-        # dirty fix for csrf :p
-        # logout(request)
+    if request.user.is_authenticated:
+        logout(request)
         messages.add_message(request, messages.INFO, "You've been logged out. Have a nice day.")
     else:
         messages.add_message(request, messages.ERROR, "Mmmh.. You have to be logged in to do this.")
@@ -146,14 +141,15 @@ def profile(request: HttpRequest) -> HttpResponse:
     ctf_has_been_started = ctf_settings.has_been_started or request.user.is_staff
     if ctf_has_been_started:
         validated_challs = team_profile.validated_challenges.all()
-        team_score = sum(map(lambda c: c.nb_points, validated_challs))
+        team_score = sum(map(lambda c: c.get_nb_points(), validated_challs))
 
         challs = Challenge.objects.all()
-        points_to_get = sum(map(lambda c: c.nb_points, challs))
+        points_to_get = sum(map(lambda c: c.get_nb_points(), challs))
         percentage_valitated_challs = 0
         if points_to_get != 0:
             percentage_valitated_challs = int(100 * (team_score / points_to_get))
-        sshs_set = Ssh.objects.filter(id_team_profile=team_profile.pk).all()
+        # Deactivate feature as it's not used for now
+        sshs_set = []  # Ssh.objects.filter(id_team_profile=team_profile.pk).all()
 
     if request.method == "POST":
         team_form = UserForm(request.POST, instance=team)
@@ -184,10 +180,10 @@ def mails(request):
 @require_http_methods(["GET"])
 def team_infos(request):
     resp = {
-        "is_logged_in": request.user.is_authenticated(),
+        "is_logged_in": request.user.is_authenticated,
         "is_admin": request.user.is_staff,
     }
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         resp["nb_unread_messages"] = request.user.teamprofile.nb_unread_news
         resp["pk"] = request.user.pk
     return JsonResponse(resp)

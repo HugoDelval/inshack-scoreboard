@@ -25,14 +25,8 @@
     </div>
 
     <h2 id="all">All teams</h2>
-    {% if ctf_settings.state == ctf_settings.ON_SITE_HIDDEN %}
-        <b>Note:</b> The scoreboard is frozen until the end of the on-site CTF. That way you can't see the other teams'
-        flags and the suspense is unbearable.
-    {% elif ctf_settings.state == ctf_settings.ONLINE_HIDDEN %}
-        <b>Note:</b> The scoreboard is frozen until the end of the CTF. That way you can't see the other teams' flags
-        and the suspense is unbearable.
-    {% elif ctf_settings.state == ctf_settings.ONLINE_END %}
-        <b>Note:</b> The CTF is now finished, the scoreboards won't evolve more.
+    {% if ctf_settings.state == ctf_settings.ONLINE_END %}
+        <b>Note:</b> The CTF is now finished, the scoreboards are fixed.
     {% endif %}
     <div class="row" style="overflow-x: auto;max-width: 95vw;margin-top: 10px;">
         <div class="col">
@@ -106,10 +100,7 @@
     <hr>
 
     <h2 id="onsite">On site teams</h2>
-    {% if ctf_settings.state == ctf_settings.ON_SITE_HIDDEN %}
-        <b>Note:</b> The scoreboard is frozen until the end of the on-site CTF. That way you can't see the other teams'
-        flags and the suspense is unbearable.
-    {% elif ctf_settings.state == ctf_settings.ON_SITE_END or ctf_settings.state == ctf_settings.ONLINE_HIDDEN %}
+    {% if ctf_settings.state == ctf_settings.ON_SITE_END %}
         <b>Note:</b> The on-site CTF is now finished, this scoreboard won't evolve anymore. You can still flag the
         challenges but it will only impact the global scoreboard above.
     {% elif ctf_settings.state == ctf_settings.ONLINE_END %}

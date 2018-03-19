@@ -1,15 +1,12 @@
-import os
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import smart_text
 
 
 class TeamProfile(models.Model):
-    team = models.OneToOneField(User)
+    team = models.OneToOneField(User, on_delete=models.CASCADE)
     # team logo
-    avatar = models.URLField()
+    avatar = models.URLField(default="https://media.giphy.com/media/l46C6sdSa5DVSJnLG/giphy.gif")
 
     # team origin
     comes_from = models.CharField(max_length=255, blank=True, null=True)

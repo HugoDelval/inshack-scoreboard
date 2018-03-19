@@ -6,7 +6,7 @@ from challenges.models import Challenge
 class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ['name', 'description', 'category', 'nb_points', 'flag', 'chall_file', 'is_enabled', 'is_ovh_chall']
+        fields = ['name', 'description', 'category', 'difficulty', 'flag', 'chall_file', 'is_enabled', 'is_ovh_chall', 'nb_points_override']
 
     def __init__(self, *args, **kwargs):
         super(ChallengeForm, self).__init__(*args, **kwargs)
@@ -20,13 +20,18 @@ class ChallengeForm(forms.ModelForm):
             'class': 'md-textarea validate',
         })
 
-        self.fields['category'].label = ""
+        self.fields['category'].label = ''
         self.fields['category'].widget.attrs.update({
             'class': 'form-control validate',
         })
 
-        self.fields['nb_points'].label = 'Number of points'
-        self.fields['nb_points'].widget.attrs.update({
+        self.fields['difficulty'].label = ''
+        self.fields['difficulty'].widget.attrs.update({
+            'class': 'form-control validate',
+        })
+
+        self.fields['nb_points_override'].label = 'If value > -3, then will override the automagic points calculus'
+        self.fields['nb_points_override'].widget.attrs.update({
             'class': 'form-control validate',
         })
 

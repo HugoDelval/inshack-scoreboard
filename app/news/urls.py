@@ -2,6 +2,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = "news"
+
 urlpatterns = [
     # /news/
     url(r'^$', views.news, name="list"),

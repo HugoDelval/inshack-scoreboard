@@ -1,6 +1,9 @@
 import json
 from _sha256 import sha256
 from datetime import datetime
+
+import requests
+from challenges.models import Challenge, CTFSettings, TeamFlagChall
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
@@ -13,12 +16,11 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, logger
-import requests
-from challenges.forms import ChallengeForm
-from challenges.models import Challenge, CTFSettings, TeamFlagChall
 from news.forms import NewsForm
 from news.models import News
 from user_manager.models import TeamProfile
+
+from challenges.forms import ChallengeForm
 
 logger.setLevel(0)
 
@@ -60,19 +62,21 @@ def add_challenge(request: HttpRequest) -> HttpResponse:
 @require_http_methods(["GET"])
 def list_challenges(request: HttpRequest) -> HttpResponse:
     ctf_settings = CTFSettings.objects.first()
+    challenges = []
     if ctf_settings.has_been_started:
-        challenges = Challenge.objects.all().order_by('nb_points')
+        challenges = Challenge.objects.all().order_by('difficulty')
         for c in challenges:
             c.nb_of_validations = len(c.flaggers.filter(team__is_staff=False))
+            c.nb_points = c.get_nb_points()
     categories = Challenge.CATEGORY_CHOICES
 
     try:
         r = requests.get(ctf_settings.url_challenges_state)
         challenges_states = r.json()
         logger.info(challenges_states)
-    except Exception as e:
+    except Exception:
         challenges_states = {}
-        logger.error(str(e))
+        logger.exception("Error requesting challenges monitoring")
 
     return render(request, 'challenges/list.html', locals())
 
@@ -86,12 +90,11 @@ def get_validated_challenges(request):
     return JsonResponse({"challs_validated": challs_validated})
 
 
-@csrf_protect
 @never_cache
 @require_http_methods(["POST"])
 def validate(request: HttpRequest, chall_id: int) -> JsonResponse:
     team = request.user
-    if not team.is_authenticated():
+    if not team.is_authenticated:
         return JsonResponse({"message": "You should login to validate your challenges", "error": True})
     team_profile = team.teamprofile
     error = True
@@ -116,10 +119,10 @@ def validate(request: HttpRequest, chall_id: int) -> JsonResponse:
                     try:
                         new_team_flagger.save()  # fail if not unique together
                         team_profile.save()
-                        message = "That's correct, congratulations ! You won " + str(challenge.nb_points) + "pts !"
+                        message = "That's correct, congratulations !"
                         error = False
-                    except Exception as e:
-                        logger.error("An error occurred while trying to flag a chall: " + str(e))
+                    except Exception:
+                        logger.exception("An error occurred while trying to flag a chall: ")
             else:
                 with open("/srv/web/flags", "a") as f:
                     f.write("Team '" + team.username + "' tried : '" + flag + "'\n")
@@ -159,7 +162,7 @@ def delete_challenge(request, slug):
 
 def get_all_teams(ctf_settings: CTFSettings) -> [User]:
     if ctf_settings.should_use_saved_global_scoreboard:
-        global_scoreboard_saved = json.loads(ctf_settings.global_scoreboard_saved)
+        global_scoreboard_saved, _ = json.loads(ctf_settings.global_scoreboard_saved)
         return User.objects.filter(pk__in=list(global_scoreboard_saved))
     else:
         return User.objects.filter(is_active=True, is_staff=False, teamprofile__isnull=False)
@@ -167,15 +170,15 @@ def get_all_teams(ctf_settings: CTFSettings) -> [User]:
 
 def get_local_teams(ctf_settings: CTFSettings, all_teams: [User]) -> [User]:
     if ctf_settings.should_use_saved_local_scoreboard:
-        local_scoreboard_saved = json.loads(ctf_settings.local_scoreboard_saved)
+        local_scoreboard_saved, _ = json.loads(ctf_settings.local_scoreboard_saved)
         return User.objects.filter(pk__in=list(local_scoreboard_saved))
     else:
         return list(filter(lambda t: t.teamprofile.on_site, all_teams))
 
 
-def get_global_validated_challs(ctf_settings: CTFSettings, team: User) -> ([Challenge], int):
+def get_global_validated_challs(ctf_settings: CTFSettings, team: User) -> ([Challenge], int, {int: int}):
     if ctf_settings.should_use_saved_global_scoreboard:
-        global_scoreboard_saved = json.loads(ctf_settings.global_scoreboard_saved)
+        global_scoreboard_saved, _ = json.loads(ctf_settings.global_scoreboard_saved)
         pk_validated_challs, bugbounty_points = global_scoreboard_saved.get(str(team.pk), ([], 0))
         return Challenge.objects.filter(pk__in=pk_validated_challs), bugbounty_points
     else:
@@ -184,27 +187,54 @@ def get_global_validated_challs(ctf_settings: CTFSettings, team: User) -> ([Chal
 
 def get_onsite_validated_challs(ctf_settings: CTFSettings, team: User) -> ([Challenge], int):
     if ctf_settings.should_use_saved_local_scoreboard:
-        local_scoreboard_saved = json.loads(ctf_settings.local_scoreboard_saved)
+        local_scoreboard_saved, _ = json.loads(ctf_settings.local_scoreboard_saved)
         pk_validated_challs, bugbounty_points = local_scoreboard_saved.get(str(team.pk), ([], 0))
         return Challenge.objects.filter(pk__in=pk_validated_challs), bugbounty_points
     else:
         return team.teamprofile.validated_challenges.all(), team.teamprofile.bug_bounty_points
 
 
+def compute_live_challenge_pk_to_points() -> {int: int}:
+    challenge_pk_to_points = {}
+    challs = Challenge.objects.all()
+    for c in challs:
+        c.nb_of_validations = len(c.flaggers.filter(team__is_staff=False))
+        challenge_pk_to_points[c.pk] = c.get_nb_points()
+    return challenge_pk_to_points
+
+
+def get_global_challenge_pk_to_points(ctf_settings: CTFSettings) -> {int: int}:
+    if ctf_settings.should_use_saved_global_scoreboard:
+        _, challenge_pk_to_points = json.loads(ctf_settings.global_scoreboard_saved)
+        return challenge_pk_to_points
+    else:
+        return compute_live_challenge_pk_to_points()
+
+
+def get_local_challenge_pk_to_points(ctf_settings: CTFSettings) -> {int: int}:
+    if ctf_settings.should_use_saved_local_scoreboard:
+        _, challenge_pk_to_points = json.loads(ctf_settings.local_scoreboard_saved)
+        return challenge_pk_to_points
+    else:
+        return compute_live_challenge_pk_to_points()
+
+
 def get_scoreboards(challenges):
     ctf_settings = CTFSettings.objects.first()
     all_teams = get_all_teams(ctf_settings)
     teams_onsite = get_local_teams(ctf_settings, all_teams)
-    for i in range(len(all_teams)):
-        validated_challs, bugbounty_points = get_global_validated_challs(ctf_settings, all_teams[i])
-        all_teams[i].teamprofile.saved_bugbounty_points = bugbounty_points
-        all_teams[i].teamprofile.score = sum(map(lambda c: c.nb_points, validated_challs)) + bugbounty_points
-        all_teams[i].teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
-    for i in range(len(teams_onsite)):
-        validated_challs, bugbounty_points = get_onsite_validated_challs(ctf_settings, teams_onsite[i])
-        all_teams[i].teamprofile.saved_bugbounty_points = bugbounty_points
-        teams_onsite[i].teamprofile.score = sum(map(lambda c: c.nb_points, validated_challs)) + bugbounty_points
-        teams_onsite[i].teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
+    global_challenge_pk_to_points = get_global_challenge_pk_to_points(ctf_settings)
+    local_challenge_pk_to_points = get_local_challenge_pk_to_points(ctf_settings)
+    for t in all_teams:
+        validated_challs, bugbounty_points = get_global_validated_challs(ctf_settings, t)
+        t.teamprofile.saved_bugbounty_points = bugbounty_points
+        t.teamprofile.score = sum(map(lambda c: global_challenge_pk_to_points[c.pk], validated_challs)) + bugbounty_points
+        t.teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
+    for t in teams_onsite:
+        validated_challs, bugbounty_points = get_onsite_validated_challs(ctf_settings, t)
+        t.teamprofile.saved_bugbounty_points = bugbounty_points
+        t.teamprofile.score = sum(map(lambda c: local_challenge_pk_to_points[c.pk], validated_challs)) + bugbounty_points
+        t.teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
 
     all_teams = sorted(all_teams, key=lambda t: (-t.teamprofile.score, t.teamprofile.date_last_validation))
     teams_onsite = sorted(teams_onsite, key=lambda t: (-t.teamprofile.score, t.teamprofile.date_last_validation))
@@ -217,7 +247,7 @@ def scoreboard(request):
     challenges = []
     ctf_has_been_started = ctf_settings.has_been_started
     if ctf_has_been_started:
-        challenges = Challenge.objects.all().order_by('nb_points', 'category')
+        challenges = Challenge.objects.all().order_by('difficulty', 'category')
     all_teams, teams_onsite = get_scoreboards(challenges)
     return render(request, 'challenges/scoreboard.html', locals())
 
@@ -229,9 +259,10 @@ def admin(request):
     ctf_state = ctf_settings.get_state_display()
     ctf_has_been_started = ctf_settings.has_been_started or request.user.is_staff
 
-    challenges = Challenge.all_objects.all().order_by('nb_points')
+    challenges = Challenge.all_objects.all().order_by('difficulty')
     for c in challenges:
         c.nb_of_validations = len(c.flaggers.filter(team__is_staff=False))
+        c.nb_points = c.get_nb_points()
     categories = Challenge.CATEGORY_CHOICES
     challs_validated = request.user.teamprofile.validated_challenges
 
@@ -239,9 +270,9 @@ def admin(request):
         r = requests.get(ctf_settings.url_challenges_state)
         challenges_states = r.json()
         logger.info(challenges_states)
-    except Exception as e:
+    except Exception:
         challenges_states = {}
-        logger.error(str(e))
+        logger.exception("Error requesting challenges monitoring")
 
     news = News.objects.all().order_by("-updated_date")
     if request.user.is_staff:
@@ -258,15 +289,19 @@ def change_ctf_state_to(state):
 
 def save_scoreboards_state_and_change_ctf_state_to(state, update_local_too=True):
     ctf_settings = CTFSettings.objects.first()
-    challenges = Challenge.objects.all().order_by('nb_points', 'category')
+    challenges = Challenge.objects.all().order_by('difficulty', 'category')
     global_scoreboard, local_scoreboard = get_scoreboards(challenges)
-    ctf_settings.global_scoreboard_saved = json.dumps(
+    ctf_settings.global_scoreboard_saved = json.dumps([
         {team.pk: ([i.pk for i in team.teamprofile.validated_challenges.all()], team.teamprofile.bug_bounty_points) for
-         team in global_scoreboard})
+         team in global_scoreboard},
+        get_global_challenge_pk_to_points(ctf_settings)
+    ])
     if update_local_too:
-        ctf_settings.local_scoreboard_saved = json.dumps(
+        ctf_settings.local_scoreboard_saved = json.dumps([
             {team.pk: ([i.pk for i in team.teamprofile.validated_challenges.all()], team.teamprofile.bug_bounty_points)
-             for team in local_scoreboard})
+             for team in local_scoreboard},
+            get_local_challenge_pk_to_points(ctf_settings)
+        ])
     ctf_settings.state = state
     ctf_settings.save()
 
@@ -278,8 +313,8 @@ def post_news(text):
         for t in TeamProfile.objects.all():
             t.nb_unread_news += 1
             t.save()
-    except Exception as e:
-        logger.error("Error adding news: " + str(e))
+    except Exception:
+        logger.exception("Error adding news: ")
 
 
 @staff_member_required
@@ -308,37 +343,11 @@ def start_ctf(request):
 @never_cache
 @csrf_protect
 @require_http_methods(["POST"])
-def freeze_local_scoreboard(request):
-    save_scoreboards_state_and_change_ctf_state_to(CTFSettings.ON_SITE_HIDDEN)
-    post_news('The scoreboard is now frozen until the CTF on-site is finished. You can still submit flags but the '
-              'evolution of the scoreboard is hidden until the end of the on-site competition. Let the suspense build '
-              'up! (See the home page to know when the on-site CTF ends)')
-    messages.add_message(request, messages.SUCCESS, "Local scoreboard frozen")
-    return redirect(reverse('challenges:admin'))
-
-
-@staff_member_required
-@never_cache
-@csrf_protect
-@require_http_methods(["POST"])
 def stop_local_scoreboard(request):
     save_scoreboards_state_and_change_ctf_state_to(CTFSettings.ON_SITE_END)
     post_news('The on-site CTF is now finished! Congratulations to the participants :). Don\'t worry, you can still '
               'play online (cf home page). And we will keep adding new challenges.')
     messages.add_message(request, messages.SUCCESS, "Local competition stopped")
-    return redirect(reverse('challenges:admin'))
-
-
-@staff_member_required
-@never_cache
-@csrf_protect
-@require_http_methods(["POST"])
-def freeze_global_scoreboard(request):
-    save_scoreboards_state_and_change_ctf_state_to(CTFSettings.ONLINE_HIDDEN, False)
-    post_news('The scoreboard is now frozen until the CTF is finished. You can still submit flags but the '
-              'evolution of the scoreboard is hidden until the end of the on-site competition. Let the suspense build '
-              'up! (See the home page to know when the on-site CTF ends)')
-    messages.add_message(request, messages.SUCCESS, "Global scoreboard frozen")
     return redirect(reverse('challenges:admin'))
 
 

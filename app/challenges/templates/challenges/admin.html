@@ -98,7 +98,7 @@
                                                     {% if chall in request.user.teamprofile.validated_challenges.all %}
                                                         <i class="fa fa-flag-checkered"
                                                            style="color: darkgreen"></i>{% endif %}
-                                                    {{ chall.name }}
+                                                    {{ chall.name }} - {{ chall.get_difficulty_display }}
                                                     {% if chall in request.user.teamprofile.validated_challenges.all %}
                                                         <i class="fa fa-flag-checkered"
                                                            style="color: darkgreen"></i>{% endif %}
@@ -176,9 +176,6 @@
                                                             <input type="text" id="id_flag_chall_{{ chall.id }}"
                                                                    name="flag" class="form-control flag">
                                                             <label for="id_flag_chall_{{ chall.id }}">The flag</label>
-                                                            {% for error in field.errors %}
-                                                                <p class="text-danger">{{ error }}</p>
-                                                            {% endfor %}
                                                         </div>
 
                                                     </div>
@@ -211,9 +208,9 @@
         emails</a>
     <hr>
     <h2>Handle Teams</h2>
-    <a href="http://demo.hugodelval.com:8081/admin/user_manager/teamprofile/" class="btn btn-info btn-sm">Add a team to
+    <a href="/admin/user_manager/teamprofile/" class="btn btn-info btn-sm">Add a team to
         on-site teams</a>
-    <a href="http://demo.hugodelval.com:8081/admin/user_manager/teamprofile/" class="btn btn-info btn-sm">Add bug bounty
+    <a href="/admin/user_manager/teamprofile/" class="btn btn-info btn-sm">Add bug bounty
         points to a team</a>
     <hr>
     <h2>Handle CTF state</h2>
@@ -236,35 +233,17 @@
         <!--
     {% endif %}
     <br>
-    <a class="btn btn-warning" onclick="$('form#lock_local').submit()">Froze local scoreboard</a>
+    <a class="btn btn-danger" onclick="$('form#stop_local').submit()">Stop local scoreboard</a>
     {% if ctf_state != "Globally started" %}
         -->
 {% endif %}
 
-    {% if ctf_state != "On site scoreboard hidden" %}
-        <!--
-    {% endif %}
-    <br>
-    <a class="btn btn-danger" onclick="$('form#stop_local').submit()">Stop local scoreboard</a>
-    {% if ctf_state != "On site scoreboard hidden" %}
-        -->
-{% endif %}
-
     {% if ctf_state != "On site end" %}
-        <!--
-    {% endif %}
-    <br>
-    <a class="btn btn-warning" onclick="$('form#lock_global').submit()">Lock global scoreboard</a>
-    {% if ctf_state != "On site end" %}
-        -->
-{% endif %}
-
-    {% if ctf_state != "Online scoreboard hidden" %}
         <!--
     {% endif %}
     <br>
     <a class="btn btn-danger" onclick="$('form#stop_ctf').submit()">Stop CTF</a>
-    {% if ctf_state != "Online scoreboard hidden" %}
+    {% if ctf_state != "On site end" %}
         -->
 {% endif %}
 
@@ -274,13 +253,7 @@
     <form id="start" method="POST" action="{% url 'challenges:start_ctf' %}">
         {% csrf_token %}
     </form>
-    <form id="lock_local" method="POST" action="{% url 'challenges:freeze_local_scoreboard' %}">
-        {% csrf_token %}
-    </form>
     <form id="stop_local" method="POST" action="{% url 'challenges:stop_local_scoreboard' %}">
-        {% csrf_token %}
-    </form>
-    <form id="lock_global" method="POST" action="{% url 'challenges:freeze_global_scoreboard' %}">
         {% csrf_token %}
     </form>
     <form id="stop_ctf" method="POST" action="{% url 'challenges:end_ctf' %}">

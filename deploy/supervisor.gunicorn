@@ -1,8 +1,9 @@
 [program:gunicorn]
-command=/home/scoreboard/venv_ctf/bin/gunicorn --workers 5 --access-logfile=/home/scoreboard/logs/access --error-logfile=/home/scoreboard/logs/error --log-level debug --bind unix:/home/scoreboard/inshack-scoreboard/inshack-scoreboard.socket inshack_scoreboard.wsgi:application
+command=gunicorn --workers 5 --log-level debug --bind unix:/home/scoreboard/inshack-scoreboard/inshack-scoreboard.socket inshack_scoreboard.wsgi:application
 directory=/home/scoreboard/inshack-scoreboard
 user=scoreboard
 group=www-data
 autostart=true
 autorestart=true
-redirect_stderr=true
+stdout_logfile=/home/scoreboard/logs/access
+stderr_logfile=/home/scoreboard/logs/error

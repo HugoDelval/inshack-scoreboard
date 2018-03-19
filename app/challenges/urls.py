@@ -2,6 +2,8 @@ from django.conf.urls import url
 
 from . import views
 
+app_name = "challenges"
+
 urlpatterns = [
     # /challenges/
     url(r'^$', views.list_challenges, name='list'),
@@ -28,12 +30,8 @@ urlpatterns = [
     url(r'^start_ctf/$', views.start_ctf, name='start_ctf'),
     # /challenges/ctf_not_started/
     url(r'^ctf_not_started/$', views.ctf_not_started, name='ctf_not_started'),
-    # /challenges/freeze_local_scoreboard/
-    url(r'^freeze_local_scoreboard/$', views.freeze_local_scoreboard, name='freeze_local_scoreboard'),
     # /challenges/stop_local_scoreboard/
     url(r'^stop_local_scoreboard/$', views.stop_local_scoreboard, name='stop_local_scoreboard'),
-    # /challenges/freeze_global_scoreboard/
-    url(r'^freeze_global_scoreboard/$', views.freeze_global_scoreboard, name='freeze_global_scoreboard'),
     # /challenges/end_ctf/
     url(r'^end_ctf/$', views.end_ctf, name='end_ctf'),
 

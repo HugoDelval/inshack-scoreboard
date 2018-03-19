@@ -84,11 +84,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'inshack',
         'USER': 'inshack',
-        'PASSWORD': 'CHANGE_ME',
-        'HOST': 'localhost',
+        'PASSWORD': 'fixme',
+        'HOST': 'fixme',
         'PORT': '3306',
         'OPTIONS': {
-            'init_command': "SET sql_mode = 'STRICT_ALL_TABLES';",
+            'sql_mode': "traditional",
         }
     }
 }
@@ -109,6 +109,22 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -137,7 +153,7 @@ LOGIN_URL = '/team/login/'
 REGISTER_ENABLED = True
 from django.contrib.messages import constants as message_constants
 
-MESSAGE_LEVEL = message_constants.INFO
+MESSAGE_LEVEL = message_constants.DEBUG
 
 # Security
 

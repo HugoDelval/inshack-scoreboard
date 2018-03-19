@@ -58,6 +58,8 @@
             </ul>
         </div>
     </div>
+    <form id="logout-form" method="POST" action="{% url 'team:logout' %}">
+    </form>
 </nav>
 
 <section class="{% block container %}container{% endblock %}" style="margin-top: 15px;flex: 1;">
@@ -120,7 +122,7 @@
 
 <script type="text/javascript">
     if (location.protocol != 'https:') {
-        location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+        // location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
     }
     $(document).ready(function () {
         $.ajax({
@@ -130,7 +132,7 @@
                 var accountMenu = $("#account-menu");
                 if (data.is_logged_in) {
                     accountMenu.append('<li id="profile" class="nav-item {% block profile_active %}{% endblock %}"><a class="nav-link" href="{% url 'team:profile' %}">Profile</a></li>');
-                    accountMenu.append('<li id="logout" class="nav-item"><a class="nav-link" href="{% url 'team:logout' %}">Log out</a></li>');
+                    accountMenu.append('<li id="logout" class="nav-item"><a class="nav-link" onclick=$("form#logout-form").submit()>Log out</a></li>');
                     if (data.nb_unread_messages > 0) {
                         $("#news").prepend('<span class="badge badge-danger" ' +
                             'style="position: absolute;font-size: 60%;top: 0;margin-left: 3px;left: 0;margin-top: 2px;">'

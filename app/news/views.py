@@ -8,9 +8,9 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, logger
-
 from news.forms import NewsForm
 from news.models import News
+
 from user_manager.models import TeamProfile
 
 
@@ -24,7 +24,7 @@ def news(request: HttpRequest) -> HttpResponse:
 @never_cache
 @require_http_methods(["POST"])
 def empty_news(request):
-    if request.user.is_authenticated() and request.user.teamprofile:
+    if request.user.is_authenticated and request.user.teamprofile:
         tp = request.user.teamprofile
         tp.nb_unread_news = 0
         tp.save()
@@ -48,8 +48,8 @@ def add(request):
                 t.nb_unread_news += 1
                 t.save()
             messages.add_message(request, messages.SUCCESS, "The news has been posted.")
-        except Exception as e:
-            logger.error("Error adding news: " + str(e))
+        except Exception:
+            logger.exception("Error adding news:")
     return redirect(reverse("news:list"))
 
 
@@ -62,8 +62,8 @@ def delete(request, id_news):
     try:
         news.delete()
         messages.add_message(request, messages.SUCCESS, "The news has been deleted.")
-    except Exception as e:
-        logger.error("Error deleting news: " + str(e))
+    except Exception:
+        logger.exception("Error deleting news: ")
     return redirect(reverse("news:list"))
 
 
@@ -82,8 +82,8 @@ def modify(request, id_news):
                     t.nb_unread_news += 1
                     t.save()
                 messages.add_message(request, messages.SUCCESS, "The news has been updated.")
-            except Exception as e:
-                logger.error("Error adding news: " + str(e))
+            except Exception:
+                logger.exception("Error adding news: ")
                 messages.add_message(request, messages.ERROR, "Error while updating the news.")
             return redirect(reverse("news:list"))
     elif request.method == "GET":

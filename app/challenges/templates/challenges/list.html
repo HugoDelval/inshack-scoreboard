@@ -36,7 +36,7 @@
                                         <!--Content-->
                                         <div class="content">
                                             <h4 id="chall-title-{{ chall.id }}">
-                                                {{ chall.name }}
+                                                {{ chall.name }} - {{ chall.get_difficulty_display }}
                                             </h4>
                                             <hr>
                                             <div class="text-center" style="margin-top:120px">
@@ -90,13 +90,9 @@
                                                         <input type="text" id="id_flag_chall_{{ chall.id }}"
                                                                name="flag" class="form-control flag">
                                                         <label for="id_flag_chall_{{ chall.id }}">The flag</label>
-                                                        {% for error in field.errors %}
-                                                            <p class="text-danger">{{ error }}</p>
-                                                        {% endfor %}
                                                     </div>
 
                                                 </div>
-                                                {% csrf_token %}
 
                                                 <div class="col-4">
                                                     <button type="submit" class="btn btn-default">Submit</button>
