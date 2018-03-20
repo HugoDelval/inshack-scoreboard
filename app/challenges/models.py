@@ -49,6 +49,7 @@ class Challenge(models.Model):
     REVERSE = 'REV'
     PWN = 'PWN'
     CRYPTO = 'CRY'
+    QUEST = 'QST'
     CATEGORY_CHOICES = (
         (MISC, 'MISC'),
         (PPC, 'Programming'),
@@ -57,6 +58,7 @@ class Challenge(models.Model):
         (REVERSE, 'Reverse'),
         (PWN, 'Pwn'),
         (CRYPTO, 'Crypto'),
+        (QUEST, 'Quest'),
     )
 
     TRIV = 0
