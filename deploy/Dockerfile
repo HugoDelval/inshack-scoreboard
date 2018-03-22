@@ -24,4 +24,4 @@ EXPOSE 8081
 
 CMD service supervisor start && \
     service nginx restart && \
-    bash -c "tail -f {/var/log/nginx/scoreboard.*.log,/home/scoreboard/logs/error}"
+    bash -c "tail -f {/var/log/nginx/scoreboard.*.log,/home/scoreboard/logs/error,/home/scoreboard/logs/access}"

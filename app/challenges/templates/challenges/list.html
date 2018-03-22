@@ -132,7 +132,7 @@
                     })
                 },
                 error: function (data) {
-                    console.log(data.message);
+                    console.log(data);
                 }
             });
             $("form.flag_form").submit(function (e) {
@@ -155,7 +155,7 @@
                         }
                     },
                     error: function (data) {
-                        toastr.error(data.message);
+                        toastr.error(data);
                     }
                 });
             });
