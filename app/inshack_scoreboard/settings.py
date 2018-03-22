@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # FIXME
-SECRET_KEY = 'PLEASE_PLEASE_CHANGE_ME'
+SECRET_KEY = os.getenv('SECRET_KEY', 'PLEASE_PLEASE_CHANGE_ME')
 
 DEBUG = False
 
@@ -78,17 +78,16 @@ WSGI_APPLICATION = 'inshack_scoreboard.wsgi.application'
 
 pymysql.install_as_MySQLdb()
 
-# FIXME
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'inshack',
-        'USER': 'inshack',
-        'PASSWORD': 'fixme',
-        'HOST': 'fixme',
+        'USER': os.getenv('db_user', 'inshack'),
+        'PASSWORD': os.getenv('db_password', 'root'),
+        'HOST': os.getenv('db_host', 'localhost'),
         'PORT': '3306',
         'OPTIONS': {
-            'sql_mode': "traditional",
+            'sql_mode': 'traditional',
         }
     }
 }
