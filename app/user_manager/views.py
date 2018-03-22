@@ -15,8 +15,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from inshack_scoreboard import settings
-from user_manager.models import Ssh
 
 from user_manager.forms import UserForm, TeamProfileForm, LoginForm
 
@@ -62,6 +62,7 @@ def create_or_update_team(request: HttpRequest, team_form: UserForm, team_profil
 
 @require_http_methods(["POST"])
 @never_cache
+@csrf_exempt
 def logout_user(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         logout(request)

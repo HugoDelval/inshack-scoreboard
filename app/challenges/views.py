@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods, logger
+from django.views.decorators.csrf import csrf_exempt
 from news.forms import NewsForm
 from news.models import News
 from user_manager.models import TeamProfile
@@ -90,6 +91,7 @@ def get_validated_challenges(request):
     return JsonResponse({"challs_validated": challs_validated})
 
 
+@csrf_exempt
 @never_cache
 @require_http_methods(["POST"])
 def validate(request: HttpRequest, chall_id: int) -> JsonResponse:
