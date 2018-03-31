@@ -50,6 +50,7 @@ class Challenge(models.Model):
     PWN = 'PWN'
     CRYPTO = 'CRY'
     QUEST = 'QST'
+    NETWORK = 'NET'
     CATEGORY_CHOICES = (
         (MISC, 'MISC'),
         (PPC, 'Programming'),
@@ -59,6 +60,7 @@ class Challenge(models.Model):
         (PWN, 'Pwn'),
         (CRYPTO, 'Crypto'),
         (QUEST, 'Quest'),
+        (NETWORK, 'Network'),
     )
 
     TRIV = 0
@@ -117,15 +119,27 @@ class Challenge(models.Model):
     def get_nb_points(self):
         if self.nb_points_override >= -2:
             return self.nb_points_override
-        maximum = 500  # The original point valuation
-        decay = 70  # The amount of solves before the challenge will be at the minimum
-        minimum = 50  # The lowest possible point valuation
+
         nb_other_validations = self.nb_of_validations - 1
+        nb_validations_to_points = [
+            (0, 500),
+            (5, 400),
+            (10, 330),
+            (20, 230),
+            (30, 150),
+            (40, 90),
+            (50, 50),
+        ]
         if nb_other_validations <= 0:
-            return maximum
-        decrease = (maximum - minimum) / decay
-        points = maximum - decrease * nb_other_validations
-        return int(points) if points > minimum else minimum
+            return nb_validations_to_points[0][1]
+        if nb_other_validations >= nb_validations_to_points[-1][0]:
+            return nb_validations_to_points[-1][1]
+        for i in range(len(nb_validations_to_points) - 1):
+            nb_valid_cur, nb_points_cur = nb_validations_to_points[i]
+            nb_valid_next, nb_points_next = nb_validations_to_points[i + 1]
+            if nb_valid_cur <= nb_other_validations < nb_valid_next:
+                points = nb_points_next + (nb_points_cur - nb_points_next)*(1 - (nb_other_validations - nb_valid_cur)/(nb_valid_next - nb_valid_cur))
+                return int(points)
 
 
 class TeamFlagChall(models.Model):
