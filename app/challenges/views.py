@@ -165,15 +165,15 @@ def delete_challenge(request, slug):
 def get_all_teams(ctf_settings: CTFSettings) -> [User]:
     if ctf_settings.should_use_saved_global_scoreboard:
         global_scoreboard_saved, _ = json.loads(ctf_settings.global_scoreboard_saved)
-        return User.objects.filter(pk__in=list(global_scoreboard_saved))
+        return [u for u in User.objects.filter(pk__in=list(global_scoreboard_saved))]
     else:
-        return User.objects.filter(is_active=True, is_staff=False, teamprofile__isnull=False)
+        return [u for u in User.objects.filter(is_active=True, is_staff=False, teamprofile__isnull=False)]
 
 
 def get_local_teams(ctf_settings: CTFSettings, all_teams: [User]) -> [User]:
     if ctf_settings.should_use_saved_local_scoreboard:
         local_scoreboard_saved, _ = json.loads(ctf_settings.local_scoreboard_saved)
-        return User.objects.filter(pk__in=list(local_scoreboard_saved))
+        return [u for u in User.objects.filter(pk__in=list(local_scoreboard_saved))]
     else:
         return list(filter(lambda t: t.teamprofile.on_site, all_teams))
 
@@ -230,12 +230,12 @@ def get_scoreboards(challenges):
     for t in all_teams:
         validated_challs, bugbounty_points = get_global_validated_challs(ctf_settings, t)
         t.teamprofile.saved_bugbounty_points = bugbounty_points
-        t.teamprofile.score = sum(map(lambda c: global_challenge_pk_to_points[c.pk], validated_challs)) + bugbounty_points
+        t.teamprofile.score = sum(map(lambda c: global_challenge_pk_to_points.get(c.pk, 0), validated_challs)) + bugbounty_points
         t.teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
     for t in teams_onsite:
         validated_challs, bugbounty_points = get_onsite_validated_challs(ctf_settings, t)
         t.teamprofile.saved_bugbounty_points = bugbounty_points
-        t.teamprofile.score = sum(map(lambda c: local_challenge_pk_to_points[c.pk], validated_challs)) + bugbounty_points
+        t.teamprofile.score = sum(map(lambda c: local_challenge_pk_to_points.get(c.pk, 0), validated_challs)) + bugbounty_points
         t.teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
 
     all_teams = sorted(all_teams, key=lambda t: (-t.teamprofile.score, t.teamprofile.date_last_validation))
