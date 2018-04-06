@@ -230,12 +230,12 @@ def get_scoreboards(challenges):
     for t in all_teams:
         validated_challs, bugbounty_points = get_global_validated_challs(ctf_settings, t)
         t.teamprofile.saved_bugbounty_points = bugbounty_points
-        t.teamprofile.score = sum(map(lambda c: global_challenge_pk_to_points.get(c.pk, 0), validated_challs)) + bugbounty_points
+        t.teamprofile.score = sum(map(lambda c: global_challenge_pk_to_points.get(c.pk, global_challenge_pk_to_points.get(str(c.pk), 0)), validated_challs)) + bugbounty_points
         t.teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
     for t in teams_onsite:
         validated_challs, bugbounty_points = get_onsite_validated_challs(ctf_settings, t)
         t.teamprofile.saved_bugbounty_points = bugbounty_points
-        t.teamprofile.score = sum(map(lambda c: local_challenge_pk_to_points.get(c.pk, 0), validated_challs)) + bugbounty_points
+        t.teamprofile.score = sum(map(lambda c: local_challenge_pk_to_points.get(c.pk, local_challenge_pk_to_points.get(str(c.pk), 0)), validated_challs)) + bugbounty_points
         t.teamprofile.challenges_state = [(c in validated_challs) for c in challenges]
 
     all_teams = sorted(all_teams, key=lambda t: (-t.teamprofile.score, t.teamprofile.date_last_validation))
